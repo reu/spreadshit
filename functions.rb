@@ -1,10 +1,28 @@
 class Functions
-  [[:+, :add], [:-, :minus], [:*, :multiply], [:/, :divide]].each do |operator, name|
+  [[:+, :add], [:-, :minus], [:*, :multiply]].each do |operator, name|
     define_method(name) { |left, right| to_number(left).send(operator, to_number(right)) }
+  end
+
+  def divide(left, right)
+    right = to_number(right)
+    return Float::NAN if right.zero?
+    to_number(to_number(left) / right.to_f)
   end
 
   def sum(*args)
     to_number args.flatten.map { |arg| to_number(arg) }.reduce(:+)
+  end
+
+  def average(*args)
+    to_number(sum(*args) / args.size.to_f)
+  end
+
+  def sqrt(number)
+    Math.sqrt to_number(number)
+  end
+
+  def ln(number)
+    Math.log to_number(number)
   end
 
   def date(year, month, date)
@@ -15,6 +33,8 @@ class Functions
 
   def to_number(value)
     case value
+    when Float::INFINITY
+      value
     when nil
       0
     when Numeric
