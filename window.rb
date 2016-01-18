@@ -9,7 +9,7 @@ class Window
     @mode = :navigation
     @x, @y = 0, 0
     @sx, @sy = 0, 0
-    @col_width = 12
+    @col_width = 13
     @letters = ("A".."ZZZ").to_a
   end
 
@@ -162,11 +162,16 @@ class Window
   end
 
   def print_cell(row, col)
-    addstr("% #{@col_width}s" % @spreadsheet["#{col}#{row}"].to_s)
+    value = @spreadsheet["#{col}#{row}"].to_s
+    if value == Float::NAN.to_s
+      addstr("#VALUE!".center(@col_width))
+    else
+      addstr(value.to_s.rjust(@col_width))
+    end
   end
 
   def print_header(letter)
-    addstr("% #{@col_width / 2}s#{" " * (@col_width / 2)}" % letter)
+    addstr(letter.center(@col_width))
   end
 
   def input_line
