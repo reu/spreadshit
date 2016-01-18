@@ -15,6 +15,8 @@ class Functions
 
   def to_number(value)
     case value
+    when nil
+      0
     when Numeric
       if !value.to_f.nan? && value.to_f - value.to_i == 0
         value.to_i
