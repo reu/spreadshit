@@ -4,6 +4,8 @@ Esse projeto é um exercício sugerido pelo [Casssiano](https://github.com/cassi
 
 Por ora, o projeto está em fase alpha, e não trata quase nenhum caso de excessão.
 
+[![Obligatory gif](https://asciinema.org/a/cepbmldmz5oelcwd7fxzq9kq9.png)](https://asciinema.org/a/cepbmldmz5oelcwd7fxzq9kq9)
+
 ## Implementação
 
 Foram utilizados vários conceitos descritos no paper [Deprecating the Observer Pattern](http://infoscience.epfl.ch/record/148043/files/DeprecatingObserversTR2010.pdf) para implementação, já que cada célula representa um `Signal` descrito no paper.
@@ -21,5 +23,3 @@ Para rodar o demo, primeiro instale as dependências com:
 E depois execute
 
     $ ./demo.rb
-
-[Obligatory gif](https://asciinema.org/a/cle7hpotzws0f1zzf2ne304o7)
