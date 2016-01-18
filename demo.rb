@@ -5,16 +5,24 @@ require "./spreadsheet"
 require "./window"
 
 sheet = Spreadsheet.new
-sheet[:A1] = 10
-sheet[:A2] = 20
-sheet[:A3] = 30
-sheet[:A4] = "=A1 + A2 + A3"
-sheet[:A5] = "=SUM(A1:A3)"
+[
+  "Sum",
+  10,
+  20,
+  30,
+  "",
+  "=A2 + A3 + A4",
+  "=SUM(A2; A3; A4)",
+  "=SUM(A2:A4)"
+].each_with_index do |cel, index|
+  sheet["A#{index + 1}"] = cel
+end
 
 # Fibonacci
-sheet[:B1] = 0
-sheet[:B2] = 1
-3.upto(300).each do |n|
+sheet[:B1] = "Fibonacci"
+sheet[:B2] = 0
+sheet[:B3] = 1
+4.upto(30).each do |n|
   sheet["B#{n}"] = "=B#{n - 1} + B#{n - 2}"
 end
 

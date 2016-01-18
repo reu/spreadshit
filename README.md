@@ -4,7 +4,7 @@ Esse projeto é um exercício sugerido pelo [Casssiano](https://github.com/cassi
 
 Por ora, o projeto está em fase alpha, e não trata quase nenhum caso de excessão.
 
-[![Obligatory gif](https://asciinema.org/a/cepbmldmz5oelcwd7fxzq9kq9.png)](https://asciinema.org/a/cepbmldmz5oelcwd7fxzq9kq9)
+[![Obligatory gif](https://asciinema.org/a/4677dtu9ippkmzgttr85vnj22.png)](https://asciinema.org/a/4677dtu9ippkmzgttr85vnj22)
 
 ## Implementação
 
