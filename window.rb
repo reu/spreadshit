@@ -2,6 +2,16 @@ require "curses"
 require "ostruct"
 
 class Window
+  class Address < Struct.new(:col, :row)
+    def to_s
+      [col, row].join
+    end
+
+    def to_sym
+      to_s.to_sym
+    end
+  end
+
   include Curses
 
   def initialize(spreadsheet)
@@ -36,16 +46,16 @@ class Window
     lines - 3
   end
 
-  def coords
-    OpenStruct.new(x: @letters[@x], y: @y)
+  def address
+    Address.new(@letters[@x], @y + 1)
   end
 
   def current_cell
-    @spreadsheet.cell_at("#{coords.x}#{coords.y + 1}")
+    @spreadsheet.cell_at(address)
   end
 
   def current_cell=(value)
-    @spreadsheet["#{coords.x}#{coords.y + 1}"] = value
+    @spreadsheet[address] = value
   end
 
   def capture_input
@@ -98,6 +108,8 @@ class Window
 
   def redraw
     draw_cells
+    draw_letters_header
+    draw_numbers_header
     draw_text_field
     cursor_to_input_line
     refresh
@@ -108,84 +120,95 @@ class Window
 
     case @mode
     when :navigation
-      attron(color_pair(COLOR_RED) | A_NORMAL) do
-        help = "Press ENTER to edit #{coords.x}#{coords.y + 1}".center(cols)
-        setpos(divider_line, 0)
-        addstr(help)
-
-        value = current_cell.value.to_s
-        setpos(divider_line, 2)
-        addstr(value)
-      end
-    when :edit
-      attron(color_pair(COLOR_GREEN) | A_NORMAL) do
-        help = "Editing #{coords.x}#{coords.y + 1}".center(cols)
-        setpos(divider_line, 0)
-        addstr(help)
-
-        value = current_cell.raw.to_s
-        setpos(divider_line, 1)
-        addstr(value)
-      end
-    end
-
-    case @mode
-    when :navigation
+      draw_divider(
+        color: color_pair(COLOR_RED) | A_NORMAL,
+        left_text: current_cell.value.to_s,
+        center_text: "Press ENTER to edit #{address}",
+      )
       cursor_to_input_line
-      addstr(" " + current_cell.raw.to_s)
+      addstr(current_cell.raw.to_s)
       clrtoeol
     when :edit
+      draw_divider(
+        color: color_pair(COLOR_GREEN) | A_NORMAL,
+        left_text: current_cell.raw.to_s,
+        center_text: "Editing #{address}"
+      )
       cursor_to_input_line
       clrtoeol
     end
   end
 
-  def draw_cells
-    col_number = 4
+  def draw_divider(color: color_pair(COLOR_GREEN) | A_NORMAL, left_text: "", right_text: "", center_text: "")
+    attron color do
+      setpos(divider_line, 0)
+      addstr(" " * cols)
 
-    (@sx..max_cols + @sx).each do |col|
-      setpos(0, col_number)
-      attron(color_pair(COLOR_BLUE) | A_TOP) do
-        print_header @letters[col]
-      end
-      col_number += @col_width
+      setpos(divider_line, 2)
+      addstr(left_text.ljust(cols / 3))
+
+      setpos(divider_line, cols / 3)
+      addstr(center_text.center(cols / 3))
+
+      setpos(divider_line, cols - right_text.size - 2)
+      addstr(right_text)
     end
+  end
 
-    1.upto(max_rows).map do |row|
-      col_number = 4
+  def visible_letters
+    (@sx...max_cols + @sx).map { |col| @letters[col] }
+  end
 
-      setpos(row, 0)
-      attron(color_pair(COLOR_BLUE) | A_TOP) do
-        addstr("% 4s" % (@sy + row))
-      end
+  def selected?(row, col)
+    address.col == col && address.row == (@sy + row)
+  end
 
-      (@sx..max_cols + @sx).map { |col| @letters[col] }.map do |col|
-        setpos(row, col_number)
+  def draw_cells(padding: 4)
+    1.upto(max_rows).each do |row|
+      visible_letters.each.with_index do |col, index|
+        setpos(row, padding + index * @col_width)
 
-        if coords.x == col && coords.y == (@sy + row - 1)
-          attron(color_pair(@mode == :edit ? COLOR_GREEN : COLOR_WHITE) | A_NORMAL) do
-            print_cell @sy + row, col
+        if selected? row, col
+          attron(color_pair(@mode == :edit ? COLOR_GREEN : COLOR_WHITE) | A_TOP) do
+            draw_cell @sy + row, col
           end
         else
-          print_cell @sy + row, col
+          draw_cell @sy + row, col
         end
-
-        col_number += @col_width
       end
     end
   end
 
-  def print_cell(row, col)
-    value = @spreadsheet["#{col}#{row}"].to_s
-    if value == Float::NAN.to_s
-      addstr("#VALUE!".center(@col_width))
-    else
-      addstr(value.to_s.rjust(@col_width))
+  def draw_letters_header(padding: 4, color: COLOR_BLUE)
+    visible_letters.each.with_index do |letter, index|
+      setpos(0, padding + index * @col_width)
+
+      attron(color_pair(color) | A_TOP) do
+        addstr(letter.center(@col_width))
+      end
     end
   end
 
-  def print_header(letter)
-    addstr(letter.center(@col_width))
+  def draw_numbers_header(padding: 4, color: COLOR_BLUE)
+    1.upto(max_rows).each.with_index do |row, index|
+      setpos(row, 0)
+
+      attron(color_pair(COLOR_BLUE) | A_TOP) do
+        addstr (@sy + row).to_s.rjust(padding)
+      end
+    end
+  end
+
+  def draw_cell(row, col)
+    value = @spreadsheet["#{col}#{row}"].to_s
+
+    if value == Float::NAN.to_s
+      addstr("#VALUE!".center(@col_width))
+    elsif value.size >= @col_width
+      addstr(value.chars.last(@col_width).join)
+    else
+      addstr(value.rjust(@col_width))
+    end
   end
 
   def input_line
@@ -196,11 +219,7 @@ class Window
     lines - 2
   end
 
-  def window_line_size
-    lines - 2
-  end
-
   def cursor_to_input_line
-    setpos(input_line, 1)
+    setpos(input_line, 2)
   end
 end
