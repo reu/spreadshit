@@ -67,12 +67,7 @@ class Cell
     @raw = raw
     @observers = Set.new
     @observed = []
-
-    if block_given?
-      update(&expression)
-    else
-      update {}
-    end
+    update(&expression) if block_given?
   end
 
   def value
