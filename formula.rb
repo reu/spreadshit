@@ -14,6 +14,12 @@ class Formula
     class ReferenceNode < Node; end
   end
 
+  class Literal < Struct.new(:content); end
+  class String < Literal; end
+  class Number < Literal; end
+  class Integer < Number; end
+  class Decimal < Number; end
+
   class BinaryOperation < Struct.new(:left, :right); end
   class Addition < BinaryOperation; end
   class Subtraction < BinaryOperation; end
@@ -48,10 +54,12 @@ class Formula
   def process(node)
     case node
     when Nodes::NumberNode
-      node.text_value.include?(".") ? Float(node.text_value) : Integer(node.text_value)
+      node.text_value.include?(".") ?
+        Decimal.new(node.text_value.to_f) :
+        Integer.new(node.text_value.to_i)
 
     when Nodes::StringNode
-      node.chars.text_value
+      String.new(node.chars.text_value)
 
     when Nodes::GroupNode
       process node.content

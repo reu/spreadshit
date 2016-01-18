@@ -32,6 +32,8 @@ class Spreadsheet
 
   def eval(expression)
     case expression
+    when Formula::Literal
+      expression.content
     when Formula::Addition
       @functions.add(eval(expression.left), eval(expression.right))
     when Formula::Subtraction
