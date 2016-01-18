@@ -1,19 +1,11 @@
 require "./formula"
-
-module Functions
-  def sum(*args)
-    args.reduce(:+)
-  end
-
-  def date(year, month, date)
-    Date.new(year, month, date)
-  end
-end
+require "./functions"
 
 class Spreadsheet
-  def initialize(parser = Formula.new)
+  def initialize(parser = Formula.new, functions = Functions.new)
     @cells = Hash.new { |hash, key| hash[key] = Cell.new }
     @parser = parser
+    @functions = functions
   end
 
   def [](address)
@@ -30,8 +22,6 @@ class Spreadsheet
 
   private
 
-  include Functions
-
   def parse(value)
     if value.to_s.start_with? "="
       eval @parser.parse(value[1..-1])
@@ -43,15 +33,15 @@ class Spreadsheet
   def eval(expression)
     case expression
     when Formula::Addition
-      eval(expression.left) + eval(expression.right)
+      @functions.add(eval(expression.left), eval(expression.right))
     when Formula::Subtraction
-      eval(expression.left) - eval(expression.right)
+      @functions.subtract(eval(expression.left), eval(expression.right))
     when Formula::Multiplication
-      eval(expression.left) * eval(expression.right)
+      @functions.multiply(eval(expression.left), eval(expression.right))
     when Formula::Division
-      eval(expression.left) / eval(expression.right)
+      @functions.divide(eval(expression.left), eval(expression.right))
     when Formula::Function
-      send(expression.name.downcase, *expression.arguments.map { |arg| eval arg })
+      @functions.send(expression.name.downcase, *expression.arguments.map { |arg| eval arg })
     when Formula::Reference
       self[expression.address]
     else
