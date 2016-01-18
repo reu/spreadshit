@@ -14,10 +14,25 @@ class Functions
   private
 
   def to_number(value)
-    if value.to_f - value.to_i == 0
-      value.to_i
+    case value
+    when Numeric
+      if !value.to_f.nan? && value.to_f - value.to_i == 0
+        value.to_i
+      else
+        value.to_f
+      end
+    when Date
+      value
+    when -> string { string.to_s =~ /\A[-+]?([0-9]+\.)?[0-9]+\z/ }
+      to_number(value.to_f)
+    when String
+      if value.strip.empty?
+        0
+      else
+        Float::NAN
+      end
     else
-      value.to_f
+      Float::NAN
     end
   end
 end
