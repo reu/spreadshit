@@ -17,6 +17,9 @@ class Window
     init_screen
     start_color
     init_pair(COLOR_WHITE, COLOR_BLACK, COLOR_WHITE)
+    init_pair(COLOR_BLUE, COLOR_BLACK, COLOR_BLUE)
+    init_pair(COLOR_GREEN, COLOR_BLACK, COLOR_GREEN)
+    init_pair(COLOR_RED, COLOR_BLACK, COLOR_MAGENTA)
     use_default_colors
     redraw
 
@@ -30,7 +33,7 @@ class Window
   end
 
   def max_rows
-    lines - 4
+    lines - 3
   end
 
   def coords
@@ -92,8 +95,8 @@ class Window
   end
 
   def redraw
-    draw_text_field
     draw_cells
+    draw_text_field
     cursor_to_input_line
     refresh
   end
@@ -101,12 +104,14 @@ class Window
   def draw_text_field
     setpos(divider_line, 0)
 
-    attron(color_pair(COLOR_WHITE) | A_NORMAL) do
-      case @mode
-      when :navigation
+    case @mode
+    when :navigation
+      attron(color_pair(COLOR_RED) | A_NORMAL) do
         addstr(" Press ENTER to edit #{coords.x}#{coords.y + 1}" + " " * cols)
-      when :edit
-        addstr(" [Define value for #{coords.x}#{coords.y + 1}]" + " " * cols)
+      end
+    when :edit
+      attron(color_pair(COLOR_GREEN) | A_NORMAL) do
+        addstr(" Editing #{coords.x}#{coords.y + 1}" + " " * cols)
       end
     end
 
@@ -122,25 +127,29 @@ class Window
   end
 
   def draw_cells
-    col_number = 5
+    col_number = 4
 
     (@sx..max_cols + @sx).each do |col|
       setpos(0, col_number)
-      print_header @letters[col]
+      attron(color_pair(COLOR_BLUE) | A_TOP) do
+        print_header @letters[col]
+      end
       col_number += @col_width
     end
 
     1.upto(max_rows).map do |row|
-      col_number = 5
+      col_number = 4
 
       setpos(row, 0)
-      addstr("% 3s " % (@sy + row))
+      attron(color_pair(COLOR_BLUE) | A_TOP) do
+        addstr("% 4s" % (@sy + row))
+      end
 
       (@sx..max_cols + @sx).map { |col| @letters[col] }.map do |col|
         setpos(row, col_number)
 
         if coords.x == col && coords.y == (@sy + row - 1)
-          attron(color_pair(COLOR_WHITE) | A_NORMAL) do
+          attron(color_pair(@mode == :edit ? COLOR_GREEN : COLOR_WHITE) | A_NORMAL) do
             print_cell @sy + row, col
           end
         else
@@ -157,7 +166,7 @@ class Window
   end
 
   def print_header(letter)
-    addstr("% #{@col_width / 2}s" % letter)
+    addstr("% #{@col_width / 2}s#{" " * (@col_width / 2)}" % letter)
   end
 
   def input_line
