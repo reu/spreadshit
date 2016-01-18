@@ -109,11 +109,23 @@ class Window
     case @mode
     when :navigation
       attron(color_pair(COLOR_RED) | A_NORMAL) do
-        addstr(" Press ENTER to edit #{coords.x}#{coords.y + 1}" + " " * cols)
+        help = "Press ENTER to edit #{coords.x}#{coords.y + 1}".center(cols)
+        setpos(divider_line, 0)
+        addstr(help)
+
+        value = current_cell.value.to_s
+        setpos(divider_line, 2)
+        addstr(value)
       end
     when :edit
       attron(color_pair(COLOR_GREEN) | A_NORMAL) do
-        addstr(" Editing #{coords.x}#{coords.y + 1}" + " " * cols)
+        help = "Editing #{coords.x}#{coords.y + 1}".center(cols)
+        setpos(divider_line, 0)
+        addstr(help)
+
+        value = current_cell.raw.to_s
+        setpos(divider_line, 1)
+        addstr(value)
       end
     end
 
@@ -189,6 +201,6 @@ class Window
   end
 
   def cursor_to_input_line
-    setpos(input_line, 0)
+    setpos(input_line, 1)
   end
 end
