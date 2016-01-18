@@ -11,3 +11,15 @@ Foram utilizados vários conceitos descritos no paper [Deprecating the Observer 
 Para o parsing das fórmulas da planilha, foi desenvolvido um simples parser com o [Treetop](http://treetop.rubyforge.org/).
 
 A UI (ainda bastante simplista) foi produzida com a ajuda da biblioteca [Curses](https://en.wikipedia.org/wiki/Curses_(programming_library)).
+
+## Demo
+
+Para rodar o demo, primeiro instale as dependências com:
+
+    $ bundle install
+
+E depois execute
+
+    $ ./demo.rb
+
+[Obligatory gif](https://asciinema.org/a/cle7hpotzws0f1zzf2ne304o7)
