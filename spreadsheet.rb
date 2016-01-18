@@ -44,8 +44,18 @@ class Spreadsheet
       @functions.send(expression.name.downcase, *expression.arguments.map { |arg| eval arg })
     when Formula::Reference
       self[expression.address]
+    when Formula::Range
+      expand_range(expression.top, expression.bottom).map { |ref| eval ref }
     else
       expression
+    end
+  end
+
+  def expand_range(top, bottom)
+    cols = top.col..bottom.col
+    rows = top.row..bottom.row
+    cols.flat_map do |col|
+      rows.map { |row| Formula::Reference.new(col, row) }
     end
   end
 end
