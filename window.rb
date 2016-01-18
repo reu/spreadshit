@@ -80,6 +80,8 @@ class Window
       @sx += 1 if @x >= max_cols
     when 10
       @mode = :edit
+    when 27
+      exit 0
     else
       return
     end
