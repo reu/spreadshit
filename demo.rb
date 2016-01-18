@@ -26,5 +26,9 @@ sheet[:B3] = 1
   sheet["B#{n}"] = "=B#{n - 1} + B#{n - 2}"
 end
 
-window = Window.new(sheet)
+window = Window.new do |delegate|
+  delegate.cell_updated { |address, value| sheet[address] = value }
+  delegate.cell_value { |address| sheet[address] }
+  delegate.cell_content { |address| sheet.cell_at(address).raw }
+end
 window.start

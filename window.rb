@@ -1,5 +1,4 @@
 require "curses"
-require "ostruct"
 
 class Window
   class Address < Struct.new(:col, :row)
@@ -12,15 +11,46 @@ class Window
     end
   end
 
+  class SpreadsheetDelegate
+    def initialize
+      @cell_updated, @cell_value, @cell_content = Proc.new {}
+    end
+
+    def cell_updated(&block)
+      if block_given?
+        @cell_updated = block
+      else
+        @cell_updated
+      end
+    end
+
+    def cell_value(&block)
+      if block_given?
+        @cell_value = block
+      else
+        @cell_value
+      end
+    end
+
+    def cell_content(&block)
+      if block_given?
+        @cell_content = block
+      else
+        @cell_content
+      end
+    end
+  end
+
   include Curses
 
-  def initialize(spreadsheet)
-    @spreadsheet = spreadsheet
+  def initialize
     @mode = :navigation
     @x, @y = 0, 0
     @sx, @sy = 0, 0
     @col_width = 13
     @letters = ("A".."ZZZ").to_a
+    @spreadsheet_delegate = SpreadsheetDelegate.new
+    yield @spreadsheet_delegate
   end
 
   def start
@@ -50,12 +80,20 @@ class Window
     Address.new(@letters[@x], @y + 1)
   end
 
-  def current_cell
-    @spreadsheet.cell_at(address)
+  def current_cell_value
+    cell_value_at(address)
   end
 
-  def current_cell=(value)
-    @spreadsheet[address] = value
+  def cell_value_at(address)
+    @spreadsheet_delegate.cell_value.call(address)
+  end
+
+  def current_cell_content
+    @spreadsheet_delegate.cell_content.call(address)
+  end
+
+  def current_cell_content=(value)
+    @spreadsheet_delegate.cell_updated.call(address, value)
   end
 
   def capture_input
@@ -101,7 +139,7 @@ class Window
 
   def read_cell_definition
     echo
-    self.current_cell = getstr
+    self.current_cell_content = getstr
     @mode = :navigation
     redraw
   end
@@ -122,16 +160,16 @@ class Window
     when :navigation
       draw_divider(
         color: color_pair(COLOR_RED) | A_NORMAL,
-        left_text: current_cell.value.to_s,
+        left_text: current_cell_value.to_s,
         center_text: "Press ENTER to edit #{address}",
       )
       cursor_to_input_line
-      addstr(current_cell.raw.to_s)
+      addstr(current_cell_content.to_s)
       clrtoeol
     when :edit
       draw_divider(
         color: color_pair(COLOR_GREEN) | A_NORMAL,
-        left_text: current_cell.raw.to_s,
+        left_text: current_cell_content.to_s,
         center_text: "Editing #{address}"
       )
       cursor_to_input_line
@@ -200,7 +238,7 @@ class Window
   end
 
   def draw_cell(row, col)
-    value = @spreadsheet["#{col}#{row}"].to_s
+    value = cell_value_at(Address.new(col, row)).to_s
 
     if value == Float::NAN.to_s
       addstr("#VALUE!".center(@col_width))
