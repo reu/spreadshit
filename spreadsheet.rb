@@ -46,8 +46,6 @@ class Spreadsheet
       self[expression.address]
     when Formula::Range
       expand_range(expression.top, expression.bottom).map { |ref| eval ref }
-    else
-      expression
     end
   end
 
