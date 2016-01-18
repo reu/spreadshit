@@ -35,7 +35,7 @@ class Spreadsheet
     when Formula::Addition
       @functions.add(eval(expression.left), eval(expression.right))
     when Formula::Subtraction
-      @functions.subtract(eval(expression.left), eval(expression.right))
+      @functions.minus(eval(expression.left), eval(expression.right))
     when Formula::Multiplication
       @functions.multiply(eval(expression.left), eval(expression.right))
     when Formula::Division

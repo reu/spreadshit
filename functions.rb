@@ -1,5 +1,5 @@
 class Functions
-  [[:+, :add], [:-, :subtract], [:*, :multiply], [:/, :divide]].each do |operator, name|
+  [[:+, :add], [:-, :minus], [:*, :multiply], [:/, :divide]].each do |operator, name|
     define_method(name) { |left, right| to_number(left).send(operator, to_number(right)) }
   end
 
