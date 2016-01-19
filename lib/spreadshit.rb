@@ -31,29 +31,24 @@ class Spreadshit
     end
   end
 
-  def eval(expression, refs = Set.new)
+  def eval(expression)
     case expression
     when Formula::Literal
       expression.content
     when Formula::Addition
-      @functions.add(eval(expression.left, refs), eval(expression.right, refs))
+      @functions.add(eval(expression.left), eval(expression.right))
     when Formula::Subtraction
-      @functions.minus(eval(expression.left, refs), eval(expression.right, refs))
+      @functions.minus(eval(expression.left), eval(expression.right))
     when Formula::Multiplication
-      @functions.multiply(eval(expression.left, refs), eval(expression.right, refs))
+      @functions.multiply(eval(expression.left), eval(expression.right))
     when Formula::Division
-      @functions.divide(eval(expression.left, refs), eval(expression.right, refs))
+      @functions.divide(eval(expression.left), eval(expression.right))
     when Formula::Function
-      @functions.send(expression.name.downcase, *expression.arguments.map { |arg| eval arg, refs })
+      @functions.send(expression.name.downcase, *expression.arguments.map { |arg| eval arg })
     when Formula::Reference
-      if refs.include? expression.address
-        "CYCLIC"
-      else
-        refs << expression.address
-        self[expression.address]
-      end
+      self[expression.address]
     when Formula::Range
-      expand_range(expression.top, expression.bottom).map { |ref| eval ref, refs }
+      expand_range(expression.top, expression.bottom).map { |ref| eval ref }
     end
   end
 
