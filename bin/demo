@@ -29,6 +29,6 @@ end
 window = Spreadshit::Window.new do |delegate|
   delegate.cell_updated { |address, value| sheet[address] = value }
   delegate.cell_value { |address| sheet[address] }
-  delegate.cell_content { |address| sheet.cell_at(address).raw }
+  delegate.cell_content { |address| sheet.raw(address) }
 end
 window.start

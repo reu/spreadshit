@@ -17,8 +17,8 @@ class Spreadshit
     @cells[address.to_sym].update(value) { parse(value) }
   end
 
-  def cell_at(address)
-    @cells[address.to_sym]
+  def raw(address)
+    @cells[address.to_sym].raw
   end
 
   private
