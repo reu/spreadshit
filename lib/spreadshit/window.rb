@@ -100,8 +100,10 @@ class Spreadshit
     def capture_input
       case @mode
       when :navigation
+        curs_set(0)
         navigate
       when :edit
+        curs_set(2)
         read_cell_definition
       end
     end
