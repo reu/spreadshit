@@ -10,11 +10,15 @@ class Spreadshit::Functions
   end
 
   def sum(*args)
-    to_number args.flatten.map { |arg| to_number(arg) }.reduce(:+)
+    to_number number_list(*args).reduce(:+)
   end
 
   def average(*args)
-    to_number(sum(*args) / args.size.to_f)
+    to_number(sum(*args) / count(*args).to_f)
+  end
+
+  def count(*args)
+    args.size
   end
 
   def sqrt(number)
@@ -26,11 +30,13 @@ class Spreadshit::Functions
   end
 
   def var(*args)
-    average = average(*args)
+    mean = average(*args)
 
-    args.flatten.map { |arg| to_number(arg) }.reduce(0) do |variance, value|
-      variance + (value - average) ** 2
+    distance_from_mean = number_list(*args).reduce(0) do |total, value|
+      total + (value - mean) ** 2
     end
+
+    to_number(distance_from_mean / (count(*args) - 1).to_f)
   end
 
   def stdev(*args)
@@ -64,5 +70,9 @@ class Spreadshit::Functions
     else
       Float::NAN
     end
+  end
+
+  def number_list(*args)
+    args.map { |item| item.respond_to?(:to_a) ? item.to_a : item }.flatten.map { |arg| to_number arg }
   end
 end

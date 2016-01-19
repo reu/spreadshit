@@ -1,3 +1,5 @@
+require "matrix"
+
 class Spreadshit
   require "spreadshit/cell"
   require "spreadshit/formula"
@@ -55,8 +57,10 @@ class Spreadshit
   def expand_range(top, bottom)
     cols = top.col..bottom.col
     rows = top.row..bottom.row
-    cols.flat_map do |col|
+    refs = cols.map do |col|
       rows.map { |row| Formula::Reference.new(col, row) }
     end
+
+    Matrix[*refs].transpose
   end
 end
