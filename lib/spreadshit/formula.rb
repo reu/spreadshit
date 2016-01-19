@@ -1,6 +1,6 @@
 require "treetop"
 
-class Formula
+class Spreadshit::Formula
   module Nodes
     class Node < Treetop::Runtime::SyntaxNode; end
     class NumberNode < Node; end
@@ -43,7 +43,7 @@ class Formula
     end
   end
 
-  @@parser = Treetop.load("./formula.treetop").new
+  @@parser = Treetop.load(File.join(File.dirname(__FILE__), "formula.treetop")).new
 
   def parse(formula)
     process @@parser.parse(formula)

@@ -1,7 +1,7 @@
-require "./formula"
-require "./functions"
+class Spreadshit
+  require "spreadshit/formula"
+  require "spreadshit/functions"
 
-class Spreadsheet
   def initialize(parser = Formula.new, functions = Functions.new)
     @cells = Hash.new { |hash, key| hash[key] = Cell.new }
     @parser = parser
@@ -30,24 +30,29 @@ class Spreadsheet
     end
   end
 
-  def eval(expression)
+  def eval(expression, refs = Set.new)
     case expression
     when Formula::Literal
       expression.content
     when Formula::Addition
-      @functions.add(eval(expression.left), eval(expression.right))
+      @functions.add(eval(expression.left, refs), eval(expression.right, refs))
     when Formula::Subtraction
-      @functions.minus(eval(expression.left), eval(expression.right))
+      @functions.minus(eval(expression.left, refs), eval(expression.right, refs))
     when Formula::Multiplication
-      @functions.multiply(eval(expression.left), eval(expression.right))
+      @functions.multiply(eval(expression.left, refs), eval(expression.right, refs))
     when Formula::Division
-      @functions.divide(eval(expression.left), eval(expression.right))
+      @functions.divide(eval(expression.left, refs), eval(expression.right, refs))
     when Formula::Function
-      @functions.send(expression.name.downcase, *expression.arguments.map { |arg| eval arg })
+      @functions.send(expression.name.downcase, *expression.arguments.map { |arg| eval arg, refs })
     when Formula::Reference
-      self[expression.address]
+      if refs.include? expression.address
+        "CYCLIC"
+      else
+        refs << expression.address
+        self[expression.address]
+      end
     when Formula::Range
-      expand_range(expression.top, expression.bottom).map { |ref| eval ref }
+      expand_range(expression.top, expression.bottom).map { |ref| eval ref, refs }
     end
   end
 

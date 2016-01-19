@@ -1,4 +1,4 @@
-class Functions
+class Spreadshit::Functions
   [[:+, :add], [:-, :minus], [:*, :multiply]].each do |operator, name|
     define_method(name) { |left, right| to_number(left).send(operator, to_number(right)) }
   end
@@ -23,6 +23,18 @@ class Functions
 
   def ln(number)
     Math.log to_number(number)
+  end
+
+  def var(*args)
+    average = average(*args)
+
+    args.flatten.map { |arg| to_number(arg) }.reduce(0) do |variance, value|
+      variance + (value - average) ** 2
+    end
+  end
+
+  def stdev(*args)
+    sqrt(var(*args))
   end
 
   def date(year, month, date)

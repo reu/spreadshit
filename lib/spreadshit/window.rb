@@ -1,6 +1,6 @@
 require "curses"
 
-class Window
+class Spreadshit::Window
   class Address < Struct.new(:col, :row)
     def to_s
       [col, row].join

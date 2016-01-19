@@ -1,5 +1,5 @@
 source "https://rubygems.org"
 
-gem "treetop"
+gemspec
+
 gem "pry"
-gem "curses"
