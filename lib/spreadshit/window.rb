@@ -13,32 +13,16 @@ class Spreadshit
     end
 
     class SpreadsheetDelegate
+      [:cell_updated, :cell_value, :cell_content, :cell_dependents, :cell_dependencies].each do |delegate|
+        define_method delegate do |&block|
+          block ?
+            instance_variable_set("@#{delegate}", block) :
+            instance_variable_get("@#{delegate}")
+        end
+      end
+
       def initialize
-        @cell_updated, @cell_value, @cell_content = Proc.new {}
-      end
-
-      def cell_updated(&block)
-        if block_given?
-          @cell_updated = block
-        else
-          @cell_updated
-        end
-      end
-
-      def cell_value(&block)
-        if block_given?
-          @cell_value = block
-        else
-          @cell_value
-        end
-      end
-
-      def cell_content(&block)
-        if block_given?
-          @cell_content = block
-        else
-          @cell_content
-        end
+        @cell_updated = @cell_value = @cell_value = @cell_dependents = @cell_dependencies = Proc.new {}
       end
     end
 
@@ -50,6 +34,9 @@ class Spreadshit
       @sx, @sy = 0, 0
       @col_width = 13
       @letters = ("A".."ZZZ").to_a
+
+      @show_dependencies = false
+
       @spreadsheet_delegate = SpreadsheetDelegate.new
       yield @spreadsheet_delegate
     end
@@ -61,6 +48,8 @@ class Spreadshit
       init_pair(COLOR_BLUE, COLOR_BLACK, COLOR_BLUE)
       init_pair(COLOR_GREEN, COLOR_BLACK, COLOR_GREEN)
       init_pair(COLOR_RED, COLOR_BLACK, COLOR_MAGENTA)
+      init_pair(COLOR_YELLOW, COLOR_BLACK, COLOR_YELLOW)
+      init_pair(COLOR_CYAN, COLOR_BLACK, COLOR_CYAN)
       use_default_colors
       redraw
 
@@ -97,12 +86,21 @@ class Spreadshit
       @spreadsheet_delegate.cell_updated.call(address, value)
     end
 
+    def current_cell_dependencies
+      @spreadsheet_delegate.cell_dependencies.call(address) || []
+    end
+
+    def current_cell_dependents
+      @spreadsheet_delegate.cell_dependents.call(address) || []
+    end
+
     def capture_input
       case @mode
       when :navigation
         curs_set(0)
         navigate
       when :edit
+        redraw
         curs_set(2)
         read_cell_definition
       end
@@ -131,6 +129,8 @@ class Spreadshit
         @sx += 1 if @x >= max_cols
       when 10
         @mode = :edit
+      when "d", "D"
+        @show_dependencies = !@show_dependencies
       when 27
         exit 0
       else
@@ -161,10 +161,16 @@ class Spreadshit
 
       case @mode
       when :navigation
+        dependencies_text = if @show_dependencies
+          " and D to hide dependencies"
+        else
+          " and D to show dependencies"
+        end
+
         draw_divider(
           color: color_pair(COLOR_RED) | A_NORMAL,
           left_text: current_cell_value.to_s,
-          center_text: "Press ENTER to edit #{address}",
+          center_text: "Press ENTER to edit #{address}" + dependencies_text
         )
         cursor_to_input_line
         addstr(current_cell_content.to_s)
@@ -214,7 +220,19 @@ class Spreadshit
               draw_cell @sy + row, col
             end
           else
-            draw_cell @sy + row, col
+            cell_address = Address.new(col, @sy + row).to_sym
+
+            if @show_dependencies && current_cell_dependencies.include?(cell_address)
+              attron(color_pair(COLOR_CYAN) | A_LOW) do
+                draw_cell @sy + row, col
+              end
+            elsif @show_dependencies && current_cell_dependents.include?(cell_address)
+              attron(color_pair(COLOR_YELLOW) | A_LOW) do
+                draw_cell @sy + row, col
+              end
+            else
+              draw_cell @sy + row, col
+            end
           end
         end
       end

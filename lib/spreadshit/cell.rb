@@ -1,8 +1,8 @@
 class Spreadshit::Cell
-  attr_reader :raw
+  attr_reader :address, :raw
 
-  def initialize(raw = "", &expression)
-    @raw = raw
+  def initialize(address, &expression)
+    @address = address
     @observers = Set.new
     @observed = []
     update(&expression) if block_given?

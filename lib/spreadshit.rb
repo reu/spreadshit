@@ -6,7 +6,7 @@ class Spreadshit
   require "spreadshit/functions"
 
   def initialize(parser = Formula.new, functions = Functions.new)
-    @cells = Hash.new { |hash, key| hash[key] = Cell.new }
+    @cells = Hash.new { |cells, address| cells[address] = Cell.new(address) }
     @parser = parser
     @functions = functions
   end
@@ -21,6 +21,10 @@ class Spreadshit
 
   def raw(address)
     @cells[address.to_sym].raw
+  end
+
+  def cell(address)
+    @cells[address.to_sym]
   end
 
   private
