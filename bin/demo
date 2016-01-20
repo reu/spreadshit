@@ -31,6 +31,6 @@ window = Spreadshit::Window.new do |delegate|
   delegate.cell_value { |address| sheet[address] }
   delegate.cell_content { |address| sheet.raw(address) }
   delegate.cell_dependents { |address| sheet.cell(address).send(:observers).map(&:address) }
-  delegate.cell_dependencies { |address| sheet.cell(address).send(:observed).map(&:address) }
+  delegate.cell_dependencies { |address| sheet.cell(address).send(:dependencies).map(&:address) }
 end
 window.start

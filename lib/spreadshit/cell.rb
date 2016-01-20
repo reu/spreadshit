@@ -4,14 +4,14 @@ class Spreadshit::Cell
   def initialize(address, &expression)
     @address = address
     @observers = Set.new
-    @observed = []
+    @dependencies = []
     update(&expression) if block_given?
   end
 
   def value
     if @@caller
       @observers << @@caller
-      @@caller.observed << self
+      @@caller.dependencies << self
     end
     @value
   end
@@ -25,11 +25,11 @@ class Spreadshit::Cell
 
   protected
 
-  attr_reader :observers, :observed
+  attr_reader :observers, :dependencies
 
   def compute
-    @observed.each { |observed| observed.observers.delete(self) }
-    @observed = []
+    @dependencies.each { |dependencies| dependencies.observers.delete(self) }
+    @dependencies = []
 
     @@caller = self
     new_value = @expression.call
