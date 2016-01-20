@@ -5,13 +5,13 @@ class Spreadshit::Cell
     @address = address
     @observers = Set.new
     @dependencies = []
-    update(&expression) if block_given?
+    update(&expression) if expression
   end
 
   def value
-    if @@caller
-      @observers << @@caller
-      @@caller.dependencies << self
+    if caller
+      @observers << caller
+      caller.dependencies << self
     end
     @value
   end
@@ -31,9 +31,7 @@ class Spreadshit::Cell
     @dependencies.each { |dependencies| dependencies.observers.delete(self) }
     @dependencies = []
 
-    @@caller = self
-    new_value = @expression.call
-    @@caller = nil
+    new_value = storing_caller { @expression.call }
 
     if new_value != @value
       @value = new_value
@@ -41,5 +39,23 @@ class Spreadshit::Cell
       @observers = Set.new
       observers.each { |observer| observer.compute }
     end
+  end
+
+  private
+
+  def caller
+    Thread.current[thread_var]
+  end
+
+  def storing_caller
+    Thread.current[thread_var] = self
+    result = yield
+  ensure
+    Thread.current[thread_var] = nil
+    result
+  end
+
+  def thread_var
+    :spreadshit_caller_cell
   end
 end
