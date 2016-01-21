@@ -1,6 +1,8 @@
 require "matrix"
 
 class Spreadshit
+  class CyclicDependency < Struct.new(:address); end
+
   require "spreadshit/cell"
   require "spreadshit/formula"
   require "spreadshit/functions"

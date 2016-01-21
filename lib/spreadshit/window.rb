@@ -26,6 +26,12 @@ class Spreadshit
       end
     end
 
+    class Error < Struct.new(:message)
+      def to_s
+        message
+      end
+    end
+
     include Curses
 
     def initialize
@@ -259,14 +265,15 @@ class Spreadshit
     end
 
     def draw_cell(row, col)
-      value = cell_value_at(Address.new(col, row)).to_s
+      value = cell_value_at(Address.new(col, row))
 
-      if value == Float::NAN.to_s
-        addstr("#VALUE!".center(@col_width))
-      elsif value.size >= @col_width
-        addstr(value.chars.last(@col_width).join)
-      else
-        addstr(value.rjust(@col_width))
+      case value
+        when Spreadshit::Window::Error
+          addstr(value.message.center(@col_width))
+        when -> string { string.to_s.size > @col_width }
+          addstr(value.to_s.chars.last(@col_width).join)
+        else
+          addstr(value.to_s.rjust(@col_width))
       end
     end
 

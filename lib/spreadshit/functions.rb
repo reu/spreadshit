@@ -65,8 +65,12 @@ class Spreadshit::Functions
       value
     when -> string { string.to_s =~ /\A[-+]?([0-9]+\.)?[0-9]+\z/ }
       to_number(value.to_f)
-    when String && -> string { string.strip.empty? }
-      0
+    when String
+      if value.strip.empty?
+        0
+      else
+        Float::NAN
+      end
     else
       Float::NAN
     end

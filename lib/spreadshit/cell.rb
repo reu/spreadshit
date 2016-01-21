@@ -1,10 +1,4 @@
 class Spreadshit::Cell
-  class CyclicDependencyError < StandardError
-    def initialize(cell)
-      super "Cycling dependency on #{cell.address}"
-    end
-  end
-
   attr_reader :address, :raw
 
   def initialize(address, &expression)
@@ -17,8 +11,8 @@ class Spreadshit::Cell
   def value
     if caller
       @observers << caller
-      fail CyclicDependencyError.new(self) if caller.observers.include? self
       caller.dependencies << self
+      return Spreadshit::CyclicDependency.new(address) if caller.observers.include? self
     end
     @value
   end

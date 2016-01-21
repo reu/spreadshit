@@ -28,7 +28,18 @@ end
 
 window = Spreadshit::Window.new do |delegate|
   delegate.cell_updated { |address, value| sheet[address] = value }
-  delegate.cell_value { |address| sheet[address] }
+  delegate.cell_value do |address|
+    value = sheet[address]
+
+    case value
+      when Spreadshit::CyclicDependency
+        Spreadshit::Window::Error.new("#REF!")
+      when Float::NAN
+        Spreadshit::Window::Error.new("#VALUE!")
+      else
+        value
+    end
+  end
   delegate.cell_content { |address| sheet.raw(address) }
   delegate.cell_dependents { |address| sheet.cell(address).send(:observers).map(&:address) }
   delegate.cell_dependencies { |address| sheet.cell(address).send(:dependencies).map(&:address) }
