@@ -33,9 +33,13 @@ window = Spreadshit::Window.new do |delegate|
 
     case value
       when Spreadshit::CyclicDependency
-        Spreadshit::Window::Error.new("#REF!")
-      when Float::NAN
-        Spreadshit::Window::Error.new("#VALUE!")
+        Spreadshit::Window::ReferenceError.new("Circular reference #{value.address}")
+      when Numeric
+        if value.to_f.nan?
+          Spreadshit::Window::ValueError.new("Value cannot be coerced to number")
+        else
+          value
+        end
       else
         value
     end

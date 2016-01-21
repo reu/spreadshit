@@ -32,6 +32,9 @@ class Spreadshit
       end
     end
 
+    class ReferenceError < Error; end
+    class ValueError < Error; end
+
     include Curses
 
     def initialize
@@ -268,8 +271,10 @@ class Spreadshit
       value = cell_value_at(Address.new(col, row))
 
       case value
-        when Spreadshit::Window::Error
-          addstr(value.message.center(@col_width))
+        when Spreadshit::Window::ReferenceError
+          addstr("#REF!".center(@col_width))
+        when Spreadshit::Window::ValueError
+          addstr("#VALUE!".center(@col_width))
         when -> string { string.to_s.size > @col_width }
           addstr(value.to_s.chars.last(@col_width).join)
         else
