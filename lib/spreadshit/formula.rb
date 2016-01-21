@@ -44,9 +44,10 @@ class Spreadshit::Formula
   end
 
   @@parser = Treetop.load(File.join(File.dirname(__FILE__), "formula.treetop")).new
+  @@cache = {}
 
   def parse(formula)
-    process @@parser.parse(formula)
+    @@cache[formula] ||= process(@@parser.parse(formula))
   end
 
   private
