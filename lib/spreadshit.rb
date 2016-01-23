@@ -56,17 +56,7 @@ class Spreadshit
     when Formula::Reference
       self[expression.address]
     when Formula::Range
-      expand_range(expression.top, expression.bottom).map { |ref| eval ref }
+      expression.to_matrix.map { |ref| eval ref }
     end
-  end
-
-  def expand_range(top, bottom)
-    cols = top.col..bottom.col
-    rows = top.row..bottom.row
-    refs = cols.map do |col|
-      rows.map { |row| Formula::Reference.new(col, row) }
-    end
-
-    Matrix[*refs].transpose
   end
 end

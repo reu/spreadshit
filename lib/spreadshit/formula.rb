@@ -29,6 +29,16 @@ class Spreadshit
       def to_s
         [top.address, bottom.address].join(":")
       end
+
+      def to_matrix
+        cols = top.col..bottom.col
+        rows = top.row..bottom.row
+        refs = cols.map do |col|
+          rows.map { |row| Reference.new(col, row) }
+        end
+
+        Matrix[*refs].transpose
+      end
     end
   end
 end
