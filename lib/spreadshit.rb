@@ -7,7 +7,7 @@ class Spreadshit
   require "spreadshit/formula"
   require "spreadshit/functions"
 
-  def initialize(parser = Formula.new, functions = Functions.new)
+  def initialize(parser = Formula::Parser.new, functions = Functions.new)
     @cells = Hash.new { |cells, address| cells[address] = Cell.new(address) }
     @parser = parser
     @functions = functions

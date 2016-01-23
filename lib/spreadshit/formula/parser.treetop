@@ -1,0 +1,61 @@
+grammar FormulaGrammar
+  rule additive
+    head:multiplicative tail:(space* operator:[+-] space* operand:multiplicative)* <Spreadshit::Formula::Parser::Nodes::AdditiveNode>
+  end
+
+  rule multiplicative
+    head:operand tail:(space* operator:[*/] space* operand:operand)* <Spreadshit::Formula::Parser::Nodes::MultiplicativeNode>
+  end
+
+  rule operand
+    reference / signed_number / string / group / function
+  end
+
+  rule group
+    '(' space* content:additive space* ')' <Spreadshit::Formula::Parser::Nodes::GroupNode>
+  end
+
+  rule function
+    name:[a-zA-Z]+ '(' space* arguments:arguments_list? space* ')' <Spreadshit::Formula::Parser::Nodes::FunctionNode>
+  end
+
+  rule arguments_list
+    head:argument tail:(space* ';' space* arguments:arguments_list)* <Spreadshit::Formula::Parser::Nodes::ArgumentListNode>
+  end
+
+  rule argument
+    range / additive / operand
+  end
+
+  rule range
+    top:reference ':' bottom:reference <Spreadshit::Formula::Parser::Nodes::RangeNode>
+  end
+
+  rule reference
+    col:[a-zA-Z]+ row:([1-9] [0-9]+ / [1-9]) <Spreadshit::Formula::Parser::Nodes::ReferenceNode>
+  end
+
+  rule signed_number
+    sign? number <Spreadshit::Formula::Parser::Nodes::NumberNode>
+  end
+
+  rule number
+    ([0-9]+ '.')? [0-9]+
+  end
+
+  rule sign
+    [+-]
+  end
+
+  rule string
+    quote chars:(!quote .)* quote <Spreadshit::Formula::Parser::Nodes::StringNode>
+  end
+
+  rule quote
+    '"'
+  end
+
+  rule space
+    ' '
+  end
+end
