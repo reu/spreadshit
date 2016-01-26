@@ -26,6 +26,14 @@ sheet[:B3] = 1
   sheet["B#{n}"] = "=B#{n - 1} + B#{n - 2}"
 end
 
+# Cyclic
+sheet[:C1] = "Cyclic"
+sheet[:C2] = 1
+3.upto(20).each do |n|
+  sheet["C#{n}"] = "=C#{n - 1} + 1"
+end
+sheet[:C2] = "=C20"
+
 window = Spreadshit::Window.new do |delegate|
   delegate.cell_updated { |address, value| sheet[address] = value }
   delegate.cell_value do |address|
@@ -33,7 +41,7 @@ window = Spreadshit::Window.new do |delegate|
 
     case value
       when Spreadshit::CyclicDependency
-        Spreadshit::Window::ReferenceError.new("Circular reference #{value.address}")
+        Spreadshit::Window::ReferenceError.new("Circular reference")
       when Numeric
         if value.to_f.nan?
           Spreadshit::Window::ValueError.new("Value cannot be coerced to number")
@@ -41,10 +49,10 @@ window = Spreadshit::Window.new do |delegate|
           value
         end
       else
-        value
+        value.to_s
     end
   end
-  delegate.cell_content { |address| sheet.raw(address) }
+  delegate.cell_content { |address| sheet.raw(address).to_s }
   delegate.cell_dependents { |address| sheet.cell(address).send(:observers).map(&:address) }
   delegate.cell_dependencies { |address| sheet.cell(address).send(:dependencies).map(&:address) }
 end

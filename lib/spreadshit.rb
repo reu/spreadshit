@@ -2,13 +2,15 @@ class Spreadshit
   class CyclicDependency < Struct.new(:address); end
 
   require "spreadshit/cell"
+  require "spreadshit/cycle_detector"
   require "spreadshit/formula"
   require "spreadshit/functions"
 
-  def initialize(parser = Formula::Parser.new, functions = Functions.new)
+  def initialize(parser: Formula::Parser.new, functions: Functions.new, cycle_detector: CycleDetector.new)
     @cells = Hash.new { |cells, address| cells[address] = Cell.new(address) }
     @parser = parser
     @functions = functions
+    @cycle_detector = cycle_detector
   end
 
   def [](address)
@@ -16,7 +18,20 @@ class Spreadshit
   end
 
   def []=(address, value)
-    @cells[address.to_sym].update(value) { parse(value) }
+    address = address.to_sym
+    content = parse value
+
+    @cycle_detector[address] = content.references
+    @cells[address].update(content) do
+      if cyclic_reference = cycle(address)
+        # TODO: this is bullshit...
+        (content.references - [cyclic_reference]).each { |a| self[a] }
+
+        CyclicDependency.new(cyclic_reference)
+      else
+        eval content
+      end
+    end
   end
 
   def raw(address)
@@ -31,9 +46,9 @@ class Spreadshit
 
   def parse(value)
     if value.to_s.start_with? "="
-      eval @parser.parse(value[1..-1])
+      @parser.parse(value[1..-1])
     else
-      value
+      Formula::Literal.new(value)
     end
   end
 
@@ -56,5 +71,9 @@ class Spreadshit
     when Formula::Range
       expression.to_matrix.map { |ref| eval ref }
     end
+  end
+
+  def cycle(address)
+    @cycle_detector.cycle(address)
   end
 end
