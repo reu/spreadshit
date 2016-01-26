@@ -1,4 +1,5 @@
 require "spreadshit/formula/parser"
+require "matrix"
 
 class Spreadshit
   module Formula
