@@ -40,8 +40,8 @@ window = Spreadshit::Window.new do |delegate|
     value = sheet[address]
 
     case value
-      when Spreadshit::CyclicDependency
-        Spreadshit::Window::ReferenceError.new("Circular reference")
+      when Spreadshit::Formula::CyclicDependency
+        Spreadshit::Window::ReferenceError.new("Circular reference #{value.address}")
       when Numeric
         if value.to_f.nan?
           Spreadshit::Window::ValueError.new("Value cannot be coerced to number")

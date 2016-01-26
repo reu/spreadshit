@@ -1,6 +1,4 @@
 class Spreadshit
-  class CyclicDependency < Struct.new(:address); end
-
   require "spreadshit/cell"
   require "spreadshit/cycle_detector"
   require "spreadshit/formula"
@@ -27,7 +25,7 @@ class Spreadshit
         # TODO: this is bullshit...
         (content.references - [cyclic_reference]).each { |a| self[a] }
 
-        CyclicDependency.new(cyclic_reference)
+        Formula::CyclicDependency.new(cyclic_reference)
       else
         eval content
       end

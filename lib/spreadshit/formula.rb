@@ -20,6 +20,8 @@ class Spreadshit
       end
     end
 
+    class CyclicDependency < Struct.new(:address); end
+
     class Literal < Struct.new(:content)
       include Travarsable
     end

@@ -12,7 +12,6 @@ class Spreadshit::Cell
     if caller
       @observers << caller
       caller.dependencies << self
-      return Spreadshit::CyclicDependency.new(address) if caller.observers.include? self
     end
     @value
   end

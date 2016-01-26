@@ -14,7 +14,7 @@ class Spreadshit
 
     def cycle(address)
       each_strongly_connected_component_from(address.to_sym) do |components|
-        return components.delete_if { |n| Array === n }.first if components.length != 1
+        return components.delete_if { |n| Array === n }.last if components.length != 1
       end
       nil
     end
