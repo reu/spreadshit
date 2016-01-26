@@ -24,6 +24,10 @@ class Spreadshit
 
     class Literal < Struct.new(:content)
       include Travarsable
+
+      def to_s
+        content.to_s
+      end
     end
 
     class String < Literal; end
@@ -37,18 +41,63 @@ class Spreadshit
       def children
         [left, right]
       end
+
+      def to_s
+        [left.to_s, right.to_s].join(" #{operator} ")
+      end
+
+      def operator
+        fail NotImplementedError
+      end
     end
 
-    class Addition < BinaryOperation; end
-    class Subtraction < BinaryOperation; end
-    class Multiplication < BinaryOperation; end
-    class Division < BinaryOperation; end
+    class Additive < BinaryOperation; end
+
+    class Addition < Additive
+      def operator
+        :+
+      end
+    end
+
+    class Subtraction < Additive
+      def operator
+        :-
+      end
+    end
+
+    class Multiplicative < BinaryOperation
+      def to_s
+        if left.is_a? Additive
+          ["(#{left})", right.to_s].join(" #{operator} ")
+        elsif right.is_a? Additive
+          [left.to_s, "(#{right})"].join(" #{operator} ")
+        else
+          super
+        end
+      end
+    end
+
+    class Multiplication < Multiplicative
+      def operator
+        :*
+      end
+    end
+
+    class Division < Multiplicative
+      def operator
+        :/
+      end
+    end
 
     class Function < Struct.new(:name, :arguments)
       include Travarsable
 
       def children
         arguments
+      end
+
+      def to_s
+        "#{name}(#{arguments.map(&:to_s).join(", ")})"
       end
     end
 
@@ -61,6 +110,10 @@ class Spreadshit
 
       def to_s
         address
+      end
+
+      def to_sym
+        address.to_sym
       end
     end
 
