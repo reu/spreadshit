@@ -5,7 +5,7 @@ class Spreadshit
   require "spreadshit/functions"
 
   def initialize(parser: Formula::Parser.new, functions: Functions.new, cycle_detector: CycleDetector.new)
-    @cells = Hash.new { |cells, address| cells[address] = Cell.new(address) }
+    @cells = Hash.new { |cells, address| cells[address] = Cell.new(address, Formula::Literal.new(nil)) }
     @parser = parser
     @functions = functions
     @cycle_detector = cycle_detector
@@ -26,6 +26,8 @@ class Spreadshit
         (content.references - [cyclic_reference]).each { |a| self[a] }
 
         Formula::CyclicDependency.new(cyclic_reference)
+      elsif content.is_a? Formula::Error
+        content
       else
         eval content
       end
@@ -44,7 +46,11 @@ class Spreadshit
 
   def parse(value)
     if value.to_s.start_with? "="
-      @parser.parse(value[1..-1])
+      begin
+        @parser.parse(value[1..-1])
+      rescue Formula::Parser::UnparseableFormula => error
+        Formula::InvalidFormula.new(error.input)
+      end
     else
       Formula::Literal.new(value)
     end

@@ -3,6 +3,15 @@ require "treetop"
 class Spreadshit
   module Formula
     class Parser
+      class UnparseableFormula < StandardError
+        attr_accessor :input
+
+        def initialize(input)
+          @input = input
+          super "Unparseable formula: #{input}"
+        end
+      end
+
       module Nodes
         class Node < Treetop::Runtime::SyntaxNode; end
         class NumberNode < Node; end
@@ -22,7 +31,11 @@ class Spreadshit
       end
 
       def parse(string)
-        @cache[string] ||= process(@parser.parse(string))
+        @cache[string] ||= begin
+          parsed = @parser.parse(string)
+          fail UnparseableFormula, string unless parsed
+          process parsed
+        end
       end
 
       def process(node)

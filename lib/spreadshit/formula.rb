@@ -20,7 +20,21 @@ class Spreadshit
       end
     end
 
-    class CyclicDependency < Struct.new(:address); end
+    module Error
+      def to_s
+        ""
+      end
+    end
+
+    class CyclicDependency < Struct.new(:address)
+      include Travarsable
+      include Error
+    end
+
+    class InvalidFormula < Struct.new(:formula)
+      include Travarsable
+      include Error
+    end
 
     class Literal < Struct.new(:content)
       include Travarsable

@@ -1,11 +1,11 @@
 class Spreadshit::Cell
-  attr_reader :address, :raw
+  attr_reader :address, :expression
 
-  def initialize(address, &expression)
+  def initialize(address, expression)
     @address = address
+    @expression = expression
     @observers = Set.new
-    @dependencies = []
-    update(&expression) if expression
+    @dependencies = Set.new
   end
 
   def value
@@ -16,11 +16,15 @@ class Spreadshit::Cell
     @value
   end
 
-  def update(value = raw || "", &expression)
-    @raw = value
+  def update(expression, &computation)
     @expression = expression
+    @computation = computation
     compute
     @value
+  end
+
+  def raw
+    @expression.to_s
   end
 
   protected
@@ -29,9 +33,9 @@ class Spreadshit::Cell
 
   def compute
     @dependencies.each { |dependencies| dependencies.observers.delete(self) }
-    @dependencies = []
+    @dependencies = Set.new
 
-    new_value = storing_caller { @expression.call }
+    new_value = storing_caller { @computation.call }
 
     if new_value != @value
       @value = new_value

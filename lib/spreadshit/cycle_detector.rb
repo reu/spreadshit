@@ -13,7 +13,10 @@ class Spreadshit
     end
 
     def cycle(address)
-      each_strongly_connected_component_from(address.to_sym) do |components|
+      address = address.to_sym
+      return address if @graph[address].include? address
+
+      each_strongly_connected_component_from(address) do |components|
         return components.delete_if { |n| Array === n }.last if components.length != 1
       end
       nil
@@ -26,7 +29,7 @@ class Spreadshit
     end
 
     def tsort_each_child(node, &block)
-      @graph[node].each(&block)
+      @graph.fetch(node, []).each(&block)
     end
   end
 end

@@ -42,6 +42,8 @@ window = Spreadshit::Window.new do |delegate|
     case value
       when Spreadshit::Formula::CyclicDependency
         Spreadshit::Window::ReferenceError.new("Circular reference #{value.address}")
+      when Spreadshit::Formula::InvalidFormula
+        Spreadshit::Window::NameError.new("Unknown name '#{value.formula}'")
       when Numeric
         if value.to_f.nan?
           Spreadshit::Window::ValueError.new("Value cannot be coerced to number")

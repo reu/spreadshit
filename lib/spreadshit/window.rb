@@ -33,6 +33,7 @@ class Spreadshit
     end
 
     class ReferenceError < Error; end
+    class NameError < Error; end
     class ValueError < Error; end
 
     include Curses
@@ -273,6 +274,8 @@ class Spreadshit
       case value
         when Spreadshit::Window::ReferenceError
           addstr("#REF!".center(@col_width))
+        when Spreadshit::Window::NameError
+          addstr("#NAME?".center(@col_width))
         when Spreadshit::Window::ValueError
           addstr("#VALUE!".center(@col_width))
         when -> string { string.to_s.size > @col_width }
