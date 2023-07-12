@@ -1,4 +1,5 @@
 class Spreadshit
+  require "spreadshit/sig"
   require "spreadshit/cell"
   require "spreadshit/cycle_detector"
   require "spreadshit/formula"
