@@ -4,7 +4,7 @@ Esse projeto é um exercício sugerido pelo [Casssiano](https://github.com/cassi
 
 Por ora, o projeto está em fase alpha, e não trata quase nenhum caso de excessão.
 
-[![Obligatory gif](https://asciinema.org/a/4677dtu9ippkmzgttr85vnj22.png)](https://asciinema.org/a/4677dtu9ippkmzgttr85vnj22)
+https://github.com/reu/spreadshit/assets/191614/4ac102db-bdec-4b0c-aea1-bfed147bb334
 
 ## Implementação
 
